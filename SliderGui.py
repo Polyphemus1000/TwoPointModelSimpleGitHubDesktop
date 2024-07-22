@@ -25,7 +25,9 @@ class SliderGui():
            if Tnorm >= 1:
                return 1
            else:
-               return Tnorm**n   
+               return Tnorm**n
+           
+     
     
     def calculate(self, pp,gg, dd,ee,ff):
         self.TempAtTarget=0.0;
@@ -180,7 +182,33 @@ class SliderGui():
         ax3.set_ylabel('ELectron Flux \n in particles /m$^2$ \n normalised \n to target pressure', rotation=0, ha = 'right', va = 'center')
         ax3.set_title('Electron Flux at the Target', fontweight='bold', size=10)
         ax3.legend((rr, rrr, rrrr), ('Target Electron Flux', 'Sol Mid-point Pressure', 'Target Pressure'))
-            
+        
+        
+        def autoscale_y(ax,margin=0.1):
+            """This function rescales the y-axis based on the data that is visible given the current xlim of the axis.
+            ax -- a matplotlib axes object
+            margin -- the fraction of the total height of the y-data to pad the upper and lower ylims"""
+        
+        
+            def get_bottom_top(line):
+                xd = line.get_xdata()
+                yd = line.get_ydata()
+                lo,hi = ax.get_xlim()
+                y_displayed = yd[((xd>lo) & (xd<hi))]
+                h = np.max(y_displayed) - np.min(y_displayed)
+                bot = np.min(y_displayed)-margin*h
+                top = np.max(y_displayed)+margin*h
+                return bot,top
+        
+            lines = ax.get_lines()
+            bot,top = np.inf, -np.inf
+        
+            for line in lines:
+                new_bot, new_top = get_bottom_top(line)
+                if new_bot < bot: bot = new_bot
+                if new_top > top: top = new_top + new_top/10
+        
+            ax.set_ylim(bot,top)     
         
         def update(val):
             f = PowerLoss.val
@@ -269,6 +297,9 @@ class SliderGui():
             rrr.set_ydata(PressureAtSolMidPointMatrix[c][b][a])
             rrrr.set_ydata(PressureAtTargetMatrix[c][b][a])    
             # Call update function when slider value is changed
+            autoscale_y(ax1)
+            autoscale_y(ax2)
+            autoscale_y(ax3)
         PowerLoss.on_changed(update)
         MomentumLoss.on_changed(update)
         ConductionLoss.on_changed(update)
@@ -278,10 +309,11 @@ class SliderGui():
         ax1.xaxis.set_major_locator(MultipleLocator(1))
         ax1.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         ax1.xaxis.set_minor_locator(MultipleLocator(1))
-
-        ax1.yaxis.set_major_locator(MultipleLocator(10))
+        
+        ax1.yaxis.set_major_locator(MultipleLocator(20))
         ax1.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         ax1.yaxis.set_minor_locator(MultipleLocator(5))
+        
 
         ax1.grid(which='both')
         #ax1.grid()
@@ -291,9 +323,9 @@ class SliderGui():
         ax2.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
         ax2.xaxis.set_minor_locator(MultipleLocator(1))
         '''
-        ax2.yaxis.set_major_locator(MultipleLocator(1))
+        ax2.yaxis.set_major_locator(MultipleLocator(0.1))
         ax2.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-        ax2.yaxis.set_minor_locator(MultipleLocator(0.5))
+        ax2.yaxis.set_minor_locator(MultipleLocator(0.1))
         '''
        
         ax2.grid(which='both')
